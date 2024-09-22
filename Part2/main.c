@@ -2,9 +2,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "tm4c123gh6pm.h"
-/**
- * main.c
- */
+
 
 void GPIOInterrupt(void);
 void SystickInterrupt(void);
@@ -17,14 +15,13 @@ uint32_t SW_State = 0x00;
 int duty = 80; // init, 50% duty cycle
 int main(void)
 {
-    INIT_SYS_CTRL_REGISTERS(); // init system control registers
+    INIT_SYS_CTRL_REGISTERS(); 
     INIT_GPIO_PORTF_REGISTERS();
     INIT_TIMER1_REGISTERS();
 
     while(1){
         NVIC_EN0_R = 0x40000000; // 30th bit controls PORTF
         GPIO_PORTF_IM_R = 0x01; // unmasking one switch
-//        GPIO_PORTF_CR_R = 0x00;
         TIMER1_TBMATCHR_R = duty;// update the compar-value of TIMER1-B
     }
 
@@ -62,15 +59,15 @@ void INIT_TIMER1_REGISTERS(){
     TIMER1_CTL_R = 0x0100; // enable Timer B (the timer which we're using)
 }
 
-void INIT_SYSTICK(){ // initializing systick
-    NVIC_ST_RELOAD_R = 16000*500; // 500 ms
+void INIT_SYSTICK(){ 
+    NVIC_ST_RELOAD_R = 16000*500;s
     NVIC_ST_CURRENT_R = 0x00;
     NVIC_ST_CTRL_R = 0x00000007;
 }
 
 void SystickInterrupt(){
     SW_State = (GPIO_PORTF_DATA_R & 0x01); // read the state of switch
-    if (SW_State == 0x00){ // if it is still pressed, brighten
+    if (SW_State == 0x00){ 
         duty -= 8;
         if (duty <= 0){ // saturating
             duty = 0;
@@ -89,10 +86,10 @@ void GPIOInterrupt(){
 
     INIT_SYSTICK(); // in case this interrupt turns out to be a long-press
 
-    // for debouncing
+    
     NVIC_EN0_R = 0x00000000; // 30th bit controls PORTF
     GPIO_PORTF_IM_R = 0x00; // masking both switches
-    if (PORTF_Interrupt == 0x01){ // switch was pressed, reduce brightness
+    if (PORTF_Interrupt == 0x01){ 
         GPIO_PORTF_ICR_R = 0x01; // for edge-triggered interrupts, necessary to clear the interrupt status
         duty += 8;
         if (duty >= 152){ // saturating
